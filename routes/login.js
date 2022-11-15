@@ -23,6 +23,14 @@ var mysqlConfig = {
 
 var conn = new mysql(mysqlConfig);
 
+/*로그인 성공시 사용자 정보를 Session에 저장한다*/
+passport.serializeUser(function (user, done) {
+    done(null, user)
+});
 
+/*인증 후, 페이지 접근시 마다 사용자 정보를 Session에서 읽어옴.*/
+passport.deserializeUser(function (user, done) {
+    done(null, user);
+});
 
 module.exports = router;
