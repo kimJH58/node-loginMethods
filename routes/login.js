@@ -33,6 +33,7 @@ passport.deserializeUser(function (user, done) {
     done(null, user);
 });
 
+/* 로컬 로그인 */
 passport.use(new LocalStrategy(
     {
         usernameField: 'id',
@@ -56,6 +57,7 @@ passport.use(new LocalStrategy(
 
                 return done(null, {
                     user_id:rs[0].id,
+                    user_email:rs[0].email
                 });
             })
         })
@@ -84,6 +86,72 @@ router.post('/login', (req, res, next) => {
         });
     })(req, res, next);
 });
+/**로컬 로그인 끝 */
+
+/**sns 로그인시 정보확인 */
+function loginByThirdparty(info, done){
+    console.log(info);
+
+    var user = conn.query(`SELECT * FROM tbl_user WHERE ${info.auth_type}='${info.auth_id}';`);
+    if(err){
+        return done(err);
+    }else{
+        if(user.length === 0){
+            /**신규유저 */
+            var insertUser = conn.query(`INSERT INTO tbl_user SET ${info.auth_type}='${info.auth_id}', email='${info.auth_email}';`);
+            if(err){
+                throw err;
+            }else{
+                return done(null, {
+                    'user_id' : insertUser.insertId,
+                    'user_email' : info.auth_email
+                })
+            }
+        }else{
+            /**기존유저 */
+            return done(null, {
+                'user_id' : user[0].id,
+                'user_email' : user[0].auth_email
+            })
+        }
+    }
+}
+/**sns 로그인 정보확인 끝 */
+
+/* 페이스북 로그인 */
+passport.use(new FacebookStrategy(
+    {
+        clientID:'',
+        clientSecret:'',
+        callbackURL:'/user/login/facebook/callback',
+        /* 페이스북에서 갖고 올 정보 */
+        profileFields:['id', 'email', 'gender', 'link', 'name', 'verified']
+    }, 
+    function(accessToken, refreshToken, profile, done){
+        const _profile = profile._json;
+        console.log(_profile);
+
+        loginByThirdparty({
+            'auth_type': 'facebook_uid',
+            'auth_id': _profile.id,
+            'auth_email':_profile.email
+        }, done);
+    }
+));
+
+router.get('/login/facebook',
+    passport.authenticate('facebook')
+);
+
+router.get('/login/facebook/callback',
+    passport.authenticate('facebook', {
+        /* 성공시 */
+        successRedirect: '',
+        /** 실패시 */
+        failureRedirect: ''
+    })
+);
+/**페이스북 로그인 끝 */
 
 
 module.exports = router;

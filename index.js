@@ -7,7 +7,7 @@ const port = 5000
 var loginRouter = require('./routes/login');
 
 app.use(bodyParser);
-app.use('/login', loginRouter);
+app.use('/user', loginRouter);
 
 
 app.listen(port, () => {
