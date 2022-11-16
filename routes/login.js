@@ -33,4 +33,57 @@ passport.deserializeUser(function (user, done) {
     done(null, user);
 });
 
+passport.use(new LocalStrategy(
+    {
+        usernameField: 'id',
+        passwordField: 'pw'
+    }, 
+    function(id, pw, done){
+        var sql = `SELECT * FROM tbl_user WHERE email='${id}';`;
+        conn.query(sql, function(err, rows){
+            if(err) throw err;
+            /* 아이디를 찾을 수 없음 */
+            if(rows.length == 0){
+                return done(null, false, {resultCode:500});
+            }
+            var loginSql = `SELECT * FROM tbl_user WHERE email='${id}' AND password='${pw}';`;
+            conn.query(loginSql, function(err, rs){
+                if(err) throw err;
+                /* 비밀번호 오류 */
+                if(rs.length == 0){
+                    return done(null, false, {resultCode:600})
+                }
+
+                return done(null, {
+                    user_id:rs[0].id,
+                });
+            })
+        })
+    }
+));
+
+router.post('/login', (req, res, next) => {
+    passport.authenticate('local', (err, user, info) => {
+        console.log('passport.authenticalte callback ');
+        if (err) {
+            console.error(err);
+            return next(err);
+        }
+        if(info) {
+            if (info.resultCode == 500) {
+            return res.json({ resultCode: 500, data: 'wrong id' })
+            } else if (info.resultCode == 600) {
+            return res.json({ resultCode: 500, data: 'wrong password' })
+            } 
+        }
+        return req.login(user, loginErr => {  
+            if (loginErr) {
+            return next(loginErr);
+            }
+            return res.json({resultCode:200, data: "login success"});
+        });
+    })(req, res, next);
+});
+
+
 module.exports = router;
