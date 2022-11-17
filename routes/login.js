@@ -172,7 +172,7 @@ passport.use(new KakaoStrategy(
 ))
 
 router.get('/login/kakao',
-    passport.authenticate('kakao');
+    passport.authenticate('kakao')
 );
 
 /**kakao callback 필요 */
