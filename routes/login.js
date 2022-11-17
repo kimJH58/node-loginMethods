@@ -153,5 +153,30 @@ router.get('/login/facebook/callback',
 );
 /**페이스북 로그인 끝 */
 
+/**kakao */
+passport.use(new KakaoStrategy(
+    {
+        clientID:'',
+        callbackURL:'/user/login/kakao/callback'
+    },
+    function (accessToken, refreshToken, profile, done){
+        const _profile = profile._json;
+        console.log(_profile);
+
+        loginByThirdparty({
+            'auth_type':'kakao_uid',
+            'auth_id':_profile.id,
+            'auth_email':_profile.kakao_account.email
+        }, done);
+    }
+))
+
+router.get('/login/kakao',
+    passport.authenticate('kakao');
+);
+
+/**kakao callback 필요 */
+
+
 
 module.exports = router;
