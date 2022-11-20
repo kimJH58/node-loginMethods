@@ -175,7 +175,14 @@ router.get('/login/kakao',
     passport.authenticate('kakao')
 );
 
-/**kakao callback 필요 */
+router.get('/login/kakao/callback', passport.authenticate('kakao',{
+    /**성공시 이동경로 */
+    successRedirect: '',
+    /**실패시 이동경로 */
+    failureRedirect: ''
+}));
+/**end of kakao login */
+
 
 
 
