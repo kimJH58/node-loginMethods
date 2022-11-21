@@ -202,7 +202,9 @@ passport.use(new GoogleStrategy(
     }
 ))
 
-router.get('/login/google', passport.authenticate('google'));
+router.get('/login/google', 
+    passport.authenticate('google',{scope:['profile']})
+);
 
 router.get('/login/google/callback', 
     passport.authenticate('google', {
