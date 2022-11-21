@@ -183,7 +183,32 @@ router.get('/login/kakao/callback', passport.authenticate('kakao',{
 }));
 /**end of kakao login */
 
+/**google Login */
+passport.use(new GoogleStrategy(
+    {
+        clientID: '',
+        clientSecret: '',
+        callbackURL: '/user/login/google/callback'
+    },
+    function(accessToken, refreshToken, profile, cb) {
+        const _profile = profile._json;
+        console.log(_profile);
 
+        loginByThirdparty({
+            'auth_type': 'google_uid',
+            'auth_id' : _profile.id,
+            'auth_email':_profile.email
+        }, done);
+    }
+))
+
+router.get('/login/google', passport.authenticate('google'));
+
+router.get('/login/google/callback', 
+    passport.authenticate('google', {
+        failureRedirect:''
+    })
+);
 
 
 module.exports = router;
